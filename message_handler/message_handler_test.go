@@ -27,7 +27,7 @@ func TestImplementsAgent(t *testing.T) {
 func TestMessageWithBamboo(t *testing.T) {
 	c := New()
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "bamboo botname",
+		Message: "/bamboo JuvOS Prod",
 		From: &api.User{
 			UserName: "username",
 		},
@@ -42,18 +42,32 @@ func TestMessageWithBamboo(t *testing.T) {
 	if err := AssertThat(responses[0].Replay, Is(api.ResponseReplay(false))); err != nil {
 		t.Fatal(err)
 	}
-	if err := AssertThat(responses[0].Message, Is(api.ResponseMessage("bamboo username"))); err != nil {
+	if err := AssertThat(responses[0].Message, Is(api.ResponseMessage("deploy triggered"))); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestMessageWithoutBamboo(t *testing.T) {
 	c := New()
-	responses, err := c.HandleMessage(&api.Request{Message: "foo"})
+	responses, err := c.HandleMessage(&api.Request{Message: "/yolo"})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
 	if err := AssertThat(len(responses), Is(0)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestMessageWithWrongNumberOfArguments(t *testing.T) {
+	c := New()
+	responses, err := c.HandleMessage(&api.Request{Message: "/bamboo foo"})
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(len(responses), Is(1)); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(responses[0].Message.String(), Startswith("usage:")); err != nil {
 		t.Fatal(err)
 	}
 }
