@@ -7,6 +7,7 @@ import (
 	"github.com/bborbe/bot_agent/response"
 	"github.com/bborbe/bot_agent_bamboo/bamboo"
 	"github.com/golang/glog"
+	"strings"
 )
 
 type bambooAgent struct {
@@ -24,12 +25,8 @@ func (h *bambooAgent) HandleMessage(request *api.Request) ([]*api.Response, erro
 	if glog.V(4) {
 		glog.Infof("request %+v", request)
 	}
-	if request.Message != fmt.Sprintf("bamboo %s", request.Bot) {
-		glog.V(2).Infof("message contains no bamboo => skip")
-		return nil, nil
-	}
-	if request.From == nil {
-		glog.V(2).Infof("from is empty => skip")
+	if !strings.HasPrefix(request.Message, "/deploy") {
+		glog.V(2).Infof("message contains no /deploy => skip")
 		return nil, nil
 	}
 	if err := h.deployer.Deploy(); err != nil {

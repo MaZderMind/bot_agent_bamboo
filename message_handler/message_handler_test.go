@@ -5,10 +5,10 @@ import (
 
 	"os"
 
+	"errors"
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/bot_agent/api"
 	"github.com/golang/glog"
-	"errors"
 )
 
 func TestMain(m *testing.M) {
@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-type mockDeployer  struct {
+type mockDeployer struct {
 	counter int
 	result  error
 }
@@ -40,11 +40,7 @@ func TestMessageWithBamboo(t *testing.T) {
 	deployer := new(mockDeployer)
 	c := New(deployer)
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "bamboo botname",
-		From: &api.User{
-			UserName: "username",
-		},
-		Bot: "botname",
+		Message: "/deploy",
 	})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -68,11 +64,7 @@ func TestMessageWithBambooFailure(t *testing.T) {
 	deployer.result = errors.New("fail")
 	c := New(deployer)
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "bamboo botname",
-		From: &api.User{
-			UserName: "username",
-		},
-		Bot: "botname",
+		Message: "/deploy",
 	})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -90,7 +82,6 @@ func TestMessageWithBambooFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 }
-
 
 func TestMessageWithoutBamboo(t *testing.T) {
 	deployer := new(mockDeployer)
