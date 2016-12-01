@@ -18,18 +18,21 @@ import (
 )
 
 const (
-	PARAMETER_NSQ_LOOKUPD        = "nsq-lookupd-address"
-	PARAMETER_NSQD               = "nsqd-address"
-	DEFAULT_BOT_NAME             = "bamboo"
-	PARAMETER_BOT_NAME           = "bot-name"
-	PARAMETER_RESTRICT_TO_TOKENS = "restrict-to-tokens"
+	parameterNsqLookupd       = "nsq-lookupd-address"
+	parameterNsqd             = "nsqd-address"
+	defaultBotName            = "bamboo"
+	parameterBotName          = "bot-name"
+	parameterRestrictToTokens = "restrict-to-tokens"
+	parameterBambooUrl        = "bamboo-url"
+	parameterBambooUsername   = "bamboo-username"
+	parameterBambooPassword   = "bamboo-password"
 )
 
 var (
-	nsqLookupdAddressPtr = flag.String(PARAMETER_NSQ_LOOKUPD, "", "nsq lookupd address")
-	nsqdAddressPtr       = flag.String(PARAMETER_NSQD, "", "nsqd address")
-	botNamePtr           = flag.String(PARAMETER_BOT_NAME, DEFAULT_BOT_NAME, "bot name")
-	restrictToTokensPtr  = flag.String(PARAMETER_RESTRICT_TO_TOKENS, "", "restrict to tokens")
+	nsqLookupdAddressPtr = flag.String(parameterNsqLookupd, "", "nsq lookupd address")
+	nsqdAddressPtr       = flag.String(parameterNsqd, "", "nsqd address")
+	botNamePtr           = flag.String(parameterBotName, defaultBotName, "bot name")
+	restrictToTokensPtr  = flag.String(parameterRestrictToTokens, "", "restrict to tokens")
 )
 
 func main() {
@@ -39,44 +42,33 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	err := do(
-		nsq_utils.NsqdAddress(*nsqdAddressPtr),
-		nsq_utils.NsqLookupdAddress(*nsqLookupdAddressPtr),
-		*botNamePtr,
-		*restrictToTokensPtr,
-	)
-	if err != nil {
+	if err := do(); err != nil {
 		glog.Exit(err)
 	}
 }
 
-func do(
-	nsqdAddress nsq_utils.NsqdAddress,
-	nsqLookupdAddress nsq_utils.NsqLookupdAddress,
-	botname string,
-	restrictToTokens string,
-) error {
-	requestConsumer, err := createRequestConsumer(nsqdAddress, nsqLookupdAddress, botname, restrictToTokens)
+func do() error {
+	requestConsumer, err := createRequestConsumer()
 	if err != nil {
 		return err
 	}
 	return requestConsumer.Run()
 }
 
-func createRequestConsumer(
-	nsqdAddress nsq_utils.NsqdAddress,
-	nsqLookupdAddress nsq_utils.NsqLookupdAddress,
-	botname string,
-	restrictToTokens string,
-) (request_consumer.RequestConsumer, error) {
+func createRequestConsumer() (request_consumer.RequestConsumer, error) {
+	nsqdAddress := nsq_utils.NsqdAddress(*nsqdAddressPtr)
+	nsqLookupdAddress := nsq_utils.NsqLookupdAddress(*nsqLookupdAddressPtr)
+	botname := *botNamePtr
+	restrictToTokens := *restrictToTokensPtr
+
 	if len(nsqLookupdAddress) == 0 {
-		return nil, fmt.Errorf("parameter %s missing", PARAMETER_NSQ_LOOKUPD)
+		return nil, fmt.Errorf("parameter %s missing", parameterNsqLookupd)
 	}
 	if len(nsqdAddress) == 0 {
-		return nil, fmt.Errorf("parameter %s missing", PARAMETER_NSQD)
+		return nil, fmt.Errorf("parameter %s missing", parameterNsqd)
 	}
 	if len(botname) == 0 {
-		return nil, fmt.Errorf("parameter %s missing", PARAMETER_BOT_NAME)
+		return nil, fmt.Errorf("parameter %s missing", parameterBotName)
 	}
 	producer, err := producer.New(nsqdAddress)
 	if err != nil {

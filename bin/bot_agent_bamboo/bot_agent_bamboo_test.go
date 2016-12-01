@@ -16,11 +16,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateRequestConsumer(t *testing.T) {
-	createRequestConsumer, err := createRequestConsumer("nsqd", "nsqlookupd", "testbot", "")
-	if err := AssertThat(err, NilValue()); err != nil {
+	createRequestConsumer, err := createRequestConsumer()
+	if err := AssertThat(err, NotNilValue()); err != nil {
 		t.Fatal(err)
 	}
-	if err := AssertThat(createRequestConsumer, NotNilValue()); err != nil {
+	if err := AssertThat(createRequestConsumer, NilValue()); err != nil {
 		t.Fatal(err)
 	}
 }
