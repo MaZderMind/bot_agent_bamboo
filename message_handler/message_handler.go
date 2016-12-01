@@ -17,6 +17,11 @@ func New() *bambooAgent {
 
 func (h *bambooAgent) HandleMessage(request *api.Request) ([]*api.Response, error) {
 	glog.V(2).Infof("handle message for token: %v", request.Id)
+
+	if glog.V(4) {
+		glog.Infof("request %+v", request)
+	}
+
 	if request.Message != fmt.Sprintf("bamboo %s", request.Bot) {
 		glog.V(2).Infof("message contains no bamboo => skip")
 		return nil, nil
