@@ -1,14 +1,25 @@
 hash: 16e7d9c1e9da9bb6af3d6baa690e869e916894e2eafb14d934f2dd48b19cecac
-updated: 2016-12-01T18:19:30.223117412+01:00
+updated: 2016-12-01T22:21:16.405403654+01:00
 imports:
 - name: github.com/bborbe/auth
   version: f2dc4c5dc422e4ec757d3f613045faed5d5044d4
   subpackages:
+  - client
+  - client/application
+  - client/auth
+  - client/user
+  - client/user_data
+  - client/user_group
   - model
+  - service
+  - v1
 - name: github.com/bborbe/bot_agent
   version: 04999da2098d4c4cd14c0465339d3e978e5d53c0
   subpackages:
   - api
+  - command
+  - matcher
+  - message_handler/match
   - message_handler/relay
   - message_handler/restrict
   - message_handler/restrict_to_tokens
@@ -20,6 +31,12 @@ imports:
   - topic
 - name: github.com/bborbe/flagenv
   version: 96aab95bb1341e7a7ccf9160e49792e2ad3b0e08
+- name: github.com/bborbe/http
+  version: cf94a87ca07464584321d03978be9b6ec8b07c12
+  subpackages:
+  - client_builder
+  - header
+  - rest
 - name: github.com/bborbe/nsq_utils
   version: 8109cabe90190cd4e36d6d556ed8bd7445b3907a
   subpackages:
