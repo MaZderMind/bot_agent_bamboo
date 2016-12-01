@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"runtime"
 
 	auth_model "github.com/bborbe/auth/model"
@@ -11,28 +9,32 @@ import (
 	"github.com/bborbe/bot_agent/request_consumer"
 	"github.com/bborbe/bot_agent/sender"
 	"github.com/bborbe/bot_agent_bamboo/message_handler"
+	"github.com/bborbe/bot_agent_bamboo/model"
 	flag "github.com/bborbe/flagenv"
-	"github.com/bborbe/nsq_utils"
 	"github.com/bborbe/nsq_utils/producer"
 	"github.com/golang/glog"
+	"github.com/bborbe/nsq_utils"
 )
 
 const (
-	parameterNsqLookupd       = "nsq-lookupd-address"
-	parameterNsqd             = "nsqd-address"
-	defaultBotName            = "bamboo"
-	parameterBotName          = "bot-name"
+	defaultBotName = "bamboo"
+	parameterNsqLookupd = "nsq-lookupd-address"
+	parameterNsqd = "nsqd-address"
+	parameterBotName = "bot-name"
 	parameterRestrictToTokens = "restrict-to-tokens"
-	parameterBambooUrl        = "bamboo-url"
-	parameterBambooUsername   = "bamboo-username"
-	parameterBambooPassword   = "bamboo-password"
+	parameterBambooUrl = "bamboo-url"
+	parameterBambooUsername = "bamboo-username"
+	parameterBambooPassword = "bamboo-password"
 )
 
 var (
 	nsqLookupdAddressPtr = flag.String(parameterNsqLookupd, "", "nsq lookupd address")
-	nsqdAddressPtr       = flag.String(parameterNsqd, "", "nsqd address")
-	botNamePtr           = flag.String(parameterBotName, defaultBotName, "bot name")
-	restrictToTokensPtr  = flag.String(parameterRestrictToTokens, "", "restrict to tokens")
+	nsqdAddressPtr = flag.String(parameterNsqd, "", "nsqd address")
+	botNamePtr = flag.String(parameterBotName, defaultBotName, "bot name")
+	restrictToTokensPtr = flag.String(parameterRestrictToTokens, "", "restrict to tokens")
+	bambooUrlPtr = flag.String(parameterBambooUrl, "", "bamboo url")
+	bambooUsernamePtr = flag.String(parameterBambooUsername, "", "bamboo username")
+	bambooPasswordPtr = flag.String(parameterBambooPassword, "", "bamboo password")
 )
 
 func main() {
@@ -48,36 +50,29 @@ func main() {
 }
 
 func do() error {
-	requestConsumer, err := createRequestConsumer()
+	config := createConfig()
+	if err := config.Validate(); err != nil {
+		glog.V(2).Infof("validate config failed: %v", err)
+		return err
+	}
+
+	requestConsumer, err := createRequestConsumer(config)
 	if err != nil {
+		glog.V(2).Infof("create request consumer failed: %v", err)
 		return err
 	}
 	return requestConsumer.Run()
 }
 
-func createRequestConsumer() (request_consumer.RequestConsumer, error) {
-	nsqdAddress := nsq_utils.NsqdAddress(*nsqdAddressPtr)
-	nsqLookupdAddress := nsq_utils.NsqLookupdAddress(*nsqLookupdAddressPtr)
-	botname := *botNamePtr
-	restrictToTokens := *restrictToTokensPtr
-
-	if len(nsqLookupdAddress) == 0 {
-		return nil, fmt.Errorf("parameter %s missing", parameterNsqLookupd)
-	}
-	if len(nsqdAddress) == 0 {
-		return nil, fmt.Errorf("parameter %s missing", parameterNsqd)
-	}
-	if len(botname) == 0 {
-		return nil, fmt.Errorf("parameter %s missing", parameterBotName)
-	}
-	producer, err := producer.New(nsqdAddress)
+func createRequestConsumer(config model.Config) (request_consumer.RequestConsumer, error) {
+	producer, err := producer.New(config.NsqdAddress)
 	if err != nil {
 		return nil, err
 	}
 	sender := sender.New(producer)
 	var messageHandler api.MessageHandler = message_handler.New()
 
-	tokens := auth_model.ParseTokens(restrictToTokens)
+	tokens := auth_model.ParseTokens(config.RestrictToTokens)
 	if len(tokens) > 0 {
 		messageHandler = restrict_to_tokens.New(
 			messageHandler,
@@ -85,5 +80,17 @@ func createRequestConsumer() (request_consumer.RequestConsumer, error) {
 		)
 	}
 
-	return request_consumer.New(sender.Send, nsqdAddress, nsqLookupdAddress, nsq_utils.NsqChannel(botname), messageHandler), nil
+	return request_consumer.New(sender.Send, config.NsqdAddress, config.NsqLookupdAddress, config.BotName, messageHandler), nil
+}
+
+func createConfig() model.Config {
+	return model.Config{
+		NsqLookupdAddress: nsq_utils.NsqLookupdAddress(*nsqLookupdAddressPtr),
+		NsqdAddress:       nsq_utils.NsqdAddress(*nsqdAddressPtr),
+		BotName:          nsq_utils.NsqChannel(*botNamePtr),
+		RestrictToTokens:  *restrictToTokensPtr,
+		BambooUrl:         *bambooUrlPtr,
+		BambooUsername:    *bambooUsernamePtr,
+		BambooPassword:    *bambooPasswordPtr,
+	}
 }

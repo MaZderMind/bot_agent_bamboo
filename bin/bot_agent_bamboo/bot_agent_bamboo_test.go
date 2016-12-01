@@ -7,6 +7,7 @@ import (
 
 	. "github.com/bborbe/assert"
 	"github.com/golang/glog"
+	"github.com/bborbe/bot_agent_bamboo/model"
 )
 
 func TestMain(m *testing.M) {
@@ -16,11 +17,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateRequestConsumer(t *testing.T) {
-	createRequestConsumer, err := createRequestConsumer()
-	if err := AssertThat(err, NotNilValue()); err != nil {
+	createRequestConsumer, err := createRequestConsumer(model.Config{})
+	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
-	if err := AssertThat(createRequestConsumer, NilValue()); err != nil {
+	if err := AssertThat(createRequestConsumer, NotNilValue()); err != nil {
 		t.Fatal(err)
 	}
 }

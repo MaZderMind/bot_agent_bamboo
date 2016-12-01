@@ -1,0 +1,40 @@
+package model
+
+import (
+	"fmt"
+	"github.com/bborbe/nsq_utils"
+)
+
+// Config of collector
+type Config struct {
+	NsqLookupdAddress nsq_utils.NsqLookupdAddress `json:"nsq-lookupd-address"`
+	NsqdAddress       nsq_utils.NsqdAddress `json:"nsqd-address"`
+	BotName           nsq_utils.NsqChannel `json:"bot-name"`
+	RestrictToTokens  string `json:"restrict-to-tokens"`
+	BambooUrl         string `json:"bamboo-url"`
+	BambooUsername    string `json:"bamboo-username"`
+	BambooPassword    string `json:"bamboo-password"`
+}
+
+// Validate the config values
+func (config *Config) Validate() error {
+	if len(config.NsqLookupdAddress) == 0 {
+		return fmt.Errorf("parameter NsqLookupdAddress missing")
+	}
+	if len(config.NsqdAddress) == 0 {
+		return fmt.Errorf("parameter NsqdAddress missing")
+	}
+	if len(config.BotName) == 0 {
+		return fmt.Errorf("parameter BotName missing")
+	}
+	if len(config.BambooUrl) == 0 {
+		return fmt.Errorf("parameter BambooUrl missing")
+	}
+	if len(config.BambooUsername) == 0 {
+		return fmt.Errorf("parameter BambooUsername missing")
+	}
+	if len(config.BambooPassword) == 0 {
+		return fmt.Errorf("parameter BambooPassword missing")
+	}
+	return nil
+}
