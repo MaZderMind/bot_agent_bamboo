@@ -5,14 +5,18 @@ import (
 
 	"github.com/bborbe/bot_agent/api"
 	"github.com/bborbe/bot_agent/response"
+	"github.com/bborbe/bot_agent_bamboo/bamboo"
 	"github.com/golang/glog"
 )
 
 type bambooAgent struct {
+	deployer bamboo.Deployer
 }
 
-func New() *bambooAgent {
-	return new(bambooAgent)
+func New(deployer bamboo.Deployer) *bambooAgent {
+	d := new(bambooAgent)
+	d.deployer = deployer
+	return d
 }
 
 func (h *bambooAgent) HandleMessage(request *api.Request) ([]*api.Response, error) {

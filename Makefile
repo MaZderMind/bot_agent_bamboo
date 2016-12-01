@@ -25,7 +25,10 @@ run:
 	-logtostderr \
 	-v=2 \
 	-nsqd-address=localhost:4150 \
-	-nsq-lookupd-address=localhost:4161
+	-nsq-lookupd-address=localhost:4161 \
+	-bamboo-url=$(BAMBOO_URL) \
+	-bamboo-username=$(BAMBOO_USERNAME) \
+	-bamboo-password=$(BAMBOO_PASSWORD)
 format:
 	find . -name "*.go" -exec gofmt -w "{}" \;
 	goimports -w=true .

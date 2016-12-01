@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestImplementsAgent(t *testing.T) {
-	c := New()
+	c := New(nil)
 	var i *api.MessageHandler
 	if err := AssertThat(c, Implements(i)); err != nil {
 		t.Fatal(err)
@@ -25,7 +25,7 @@ func TestImplementsAgent(t *testing.T) {
 }
 
 func TestMessageWithBamboo(t *testing.T) {
-	c := New()
+	c := New(nil)
 	responses, err := c.HandleMessage(&api.Request{
 		Message: "bamboo botname",
 		From: &api.User{
@@ -48,7 +48,7 @@ func TestMessageWithBamboo(t *testing.T) {
 }
 
 func TestMessageWithoutBamboo(t *testing.T) {
-	c := New()
+	c := New(nil)
 	responses, err := c.HandleMessage(&api.Request{Message: "foo"})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)

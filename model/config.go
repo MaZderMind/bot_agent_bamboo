@@ -8,12 +8,12 @@ import (
 // Config of collector
 type Config struct {
 	NsqLookupdAddress nsq_utils.NsqLookupdAddress `json:"nsq-lookupd-address"`
-	NsqdAddress       nsq_utils.NsqdAddress `json:"nsqd-address"`
-	BotName           nsq_utils.NsqChannel `json:"bot-name"`
-	RestrictToTokens  string `json:"restrict-to-tokens"`
-	BambooUrl         string `json:"bamboo-url"`
-	BambooUsername    string `json:"bamboo-username"`
-	BambooPassword    string `json:"bamboo-password"`
+	NsqdAddress       nsq_utils.NsqdAddress       `json:"nsqd-address"`
+	BotName           nsq_utils.NsqChannel        `json:"bot-name"`
+	RestrictToTokens  string                      `json:"restrict-to-tokens"`
+	BambooUrl         BambooUrl                   `json:"bamboo-url"`
+	BambooUsername    BambooUsername              `json:"bamboo-username"`
+	BambooPassword    BambooPassword              `json:"bamboo-password"`
 }
 
 // Validate the config values
@@ -38,3 +38,7 @@ func (config *Config) Validate() error {
 	}
 	return nil
 }
+
+type BambooUrl string
+type BambooUsername string
+type BambooPassword string
