@@ -1,12 +1,10 @@
 package main
 
 import (
+	"os"
 	"testing"
 
-	"os"
-
 	. "github.com/bborbe/assert"
-	"github.com/bborbe/bot_agent_bamboo/model"
 	"github.com/golang/glog"
 )
 
@@ -16,12 +14,9 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-func TestCreateRequestConsumer(t *testing.T) {
-	createRequestConsumer, err := createRequestConsumer(model.Config{})
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(createRequestConsumer, NotNilValue()); err != nil {
+func TestCreateConfig(t *testing.T) {
+	config := createConfig()
+	if err := AssertThat(config, NotNilValue()); err != nil {
 		t.Fatal(err)
 	}
 }

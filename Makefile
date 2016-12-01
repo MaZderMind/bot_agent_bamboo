@@ -28,7 +28,10 @@ run:
 	-nsq-lookupd-address=localhost:4161 \
 	-bamboo-url=$(BAMBOO_URL) \
 	-bamboo-username=$(BAMBOO_USERNAME) \
-	-bamboo-password=$(BAMBOO_PASSWORD)
+	-bamboo-password=$(BAMBOO_PASSWORD) \
+	-auth-url="http://localhost:6666/auth" \
+	-auth-application-name="auth" \
+	-auth-application-password="test123"
 format:
 	find . -name "*.go" -exec gofmt -w "{}" \;
 	goimports -w=true .

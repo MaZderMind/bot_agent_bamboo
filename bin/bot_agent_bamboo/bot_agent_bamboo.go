@@ -4,12 +4,7 @@ import (
 	"runtime"
 
 	auth_model "github.com/bborbe/auth/model"
-	"github.com/bborbe/bot_agent/api"
-	"github.com/bborbe/bot_agent/message_handler/restrict_to_tokens"
-	"github.com/bborbe/bot_agent/request_consumer"
-	"github.com/bborbe/bot_agent/sender"
-	"github.com/bborbe/bot_agent_bamboo/bamboo"
-	"github.com/bborbe/bot_agent_bamboo/message_handler"
+	"github.com/bborbe/bot_agent_bamboo/factory"
 	"github.com/bborbe/bot_agent_bamboo/model"
 	flag "github.com/bborbe/flagenv"
 	"github.com/bborbe/nsq_utils"
@@ -18,24 +13,34 @@ import (
 )
 
 const (
-	defaultBotName            = "bamboo"
-	parameterNsqLookupd       = "nsq-lookupd-address"
-	parameterNsqd             = "nsqd-address"
-	parameterBotName          = "bot-name"
-	parameterRestrictToTokens = "restrict-to-tokens"
-	parameterBambooUrl        = "bamboo-url"
-	parameterBambooUsername   = "bamboo-username"
-	parameterBambooPassword   = "bamboo-password"
+	defaultBotName                   = "bamboo"
+	parameterNsqLookupd              = "nsq-lookupd-address"
+	parameterNsqd                    = "nsqd-address"
+	parameterBotName                 = "bot-name"
+	parameterRestrictToTokens        = "restrict-to-tokens"
+	parameterRequiredGroups          = "required-groups"
+	parameterBambooUrl               = "bamboo-url"
+	parameterBambooUsername          = "bamboo-username"
+	parameterBambooPassword          = "bamboo-password"
+	parameterAuthUrl                 = "auth-url"
+	parameterAuthApplicationName     = "auth-application-name"
+	parameterAuthApplicationPassword = "auth-application-password"
+	parameterPrefix                  = "prefix"
 )
 
 var (
-	nsqLookupdAddressPtr = flag.String(parameterNsqLookupd, "", "nsq lookupd address")
-	nsqdAddressPtr       = flag.String(parameterNsqd, "", "nsqd address")
-	botNamePtr           = flag.String(parameterBotName, defaultBotName, "bot name")
-	restrictToTokensPtr  = flag.String(parameterRestrictToTokens, "", "restrict to tokens")
-	bambooUrlPtr         = flag.String(parameterBambooUrl, "", "bamboo url")
-	bambooUsernamePtr    = flag.String(parameterBambooUsername, "", "bamboo username")
-	bambooPasswordPtr    = flag.String(parameterBambooPassword, "", "bamboo password")
+	nsqLookupdAddressPtr       = flag.String(parameterNsqLookupd, "", "nsq lookupd address")
+	nsqdAddressPtr             = flag.String(parameterNsqd, "", "nsqd address")
+	botNamePtr                 = flag.String(parameterBotName, defaultBotName, "bot name")
+	requiredGroupsPtr          = flag.String(parameterRequiredGroups, "", "required groups reperated by comma")
+	restrictToTokensPtr        = flag.String(parameterRestrictToTokens, "", "restrict to tokens")
+	bambooUrlPtr               = flag.String(parameterBambooUrl, "", "bamboo url")
+	bambooUsernamePtr          = flag.String(parameterBambooUsername, "", "bamboo username")
+	bambooPasswordPtr          = flag.String(parameterBambooPassword, "", "bamboo password")
+	authUrlPtr                 = flag.String(parameterAuthUrl, "", "auth url")
+	authApplicationNamePtr     = flag.String(parameterAuthApplicationName, "", "auth application name")
+	authApplicationPasswordPtr = flag.String(parameterAuthApplicationPassword, "", "auth application password")
+	prefixPtr                  = flag.String(parameterPrefix, "/deploy", "prefix commands start with")
 )
 
 func main() {
@@ -56,45 +61,27 @@ func do() error {
 		glog.V(2).Infof("validate config failed: %v", err)
 		return err
 	}
-
-	requestConsumer, err := createRequestConsumer(config)
-	if err != nil {
-		glog.V(2).Infof("create request consumer failed: %v", err)
-		return err
-	}
-	return requestConsumer.Run()
-}
-
-func createRequestConsumer(config model.Config) (request_consumer.RequestConsumer, error) {
 	producer, err := producer.New(config.NsqdAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	sender := sender.New(producer)
-
-	bambooDeployer := bamboo.NewDeployer(config.BambooUrl, config.BambooUsername, config.BambooPassword)
-
-	var messageHandler api.MessageHandler = message_handler.New(bambooDeployer)
-
-	tokens := auth_model.ParseTokens(config.RestrictToTokens)
-	if len(tokens) > 0 {
-		messageHandler = restrict_to_tokens.New(
-			messageHandler,
-			tokens,
-		)
-	}
-
-	return request_consumer.New(sender.Send, config.NsqdAddress, config.NsqLookupdAddress, config.BotName, messageHandler), nil
+	factory := factory.New(config, producer)
+	return factory.RequestConsumer().Run()
 }
 
 func createConfig() model.Config {
 	return model.Config{
-		NsqLookupdAddress: nsq_utils.NsqLookupdAddress(*nsqLookupdAddressPtr),
-		NsqdAddress:       nsq_utils.NsqdAddress(*nsqdAddressPtr),
-		BotName:           nsq_utils.NsqChannel(*botNamePtr),
-		RestrictToTokens:  *restrictToTokensPtr,
-		BambooUrl:         model.BambooUrl(*bambooUrlPtr),
-		BambooUsername:    model.BambooUsername(*bambooUsernamePtr),
-		BambooPassword:    model.BambooPassword(*bambooPasswordPtr),
+		Prefix:                  model.Prefix(*prefixPtr),
+		NsqLookupdAddress:       nsq_utils.NsqLookupdAddress(*nsqLookupdAddressPtr),
+		NsqdAddress:             nsq_utils.NsqdAddress(*nsqdAddressPtr),
+		BotName:                 nsq_utils.NsqChannel(*botNamePtr),
+		RequiredGroupNames:      auth_model.ParseGroupNames(*requiredGroupsPtr),
+		RestrictToTokens:        auth_model.ParseTokens(*restrictToTokensPtr),
+		BambooUrl:               model.BambooUrl(*bambooUrlPtr),
+		BambooUsername:          model.BambooUsername(*bambooUsernamePtr),
+		BambooPassword:          model.BambooPassword(*bambooPasswordPtr),
+		AuthUrl:                 auth_model.Url(*authUrlPtr),
+		AuthApplicationName:     auth_model.ApplicationName(*authApplicationNamePtr),
+		AuthApplicationPassword: auth_model.ApplicationPassword(*authApplicationPasswordPtr),
 	}
 }

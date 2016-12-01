@@ -15,7 +15,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestImplementsDeployer(t *testing.T) {
-	c := NewDeployer("url", "user", "pass")
+	c := NewDeployer(nil, "url", "user", "pass")
 	var i *Deployer
 	if err := AssertThat(c, Implements(i)); err != nil {
 		t.Fatal(err)

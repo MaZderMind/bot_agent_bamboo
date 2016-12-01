@@ -1,12 +1,12 @@
 package message_handler
 
 import (
+	"errors"
+	"os"
 	"testing"
 
-	"os"
-
-	"errors"
 	. "github.com/bborbe/assert"
+	auth_model "github.com/bborbe/auth/model"
 	"github.com/bborbe/bot_agent/api"
 	"github.com/golang/glog"
 )
@@ -19,17 +19,21 @@ func TestMain(m *testing.M) {
 
 type mockDeployer struct {
 	counter int
+	number  int
 	result  error
 }
 
-func (m *mockDeployer) Deploy() error {
+func (m *mockDeployer) Deploy(number int) error {
+	m.number = number
 	m.counter++
 	return m.result
 }
 
 func TestImplementsAgent(t *testing.T) {
 	deployer := new(mockDeployer)
-	c := New(deployer)
+	c := New("/deploy", deployer, func(auth_model.AuthToken) bool {
+		return true
+	})
 	var i *api.MessageHandler
 	if err := AssertThat(c, Implements(i)); err != nil {
 		t.Fatal(err)
@@ -38,9 +42,11 @@ func TestImplementsAgent(t *testing.T) {
 
 func TestMessageWithBamboo(t *testing.T) {
 	deployer := new(mockDeployer)
-	c := New(deployer)
+	c := New("/deploy", deployer, func(auth_model.AuthToken) bool {
+		return true
+	})
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "/deploy",
+		Message: "/deploy 123",
 	})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -57,14 +63,19 @@ func TestMessageWithBamboo(t *testing.T) {
 	if err := AssertThat(deployer.counter, Is(1)); err != nil {
 		t.Fatal(err)
 	}
+	if err := AssertThat(deployer.number, Is(123)); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestMessageWithBambooFailure(t *testing.T) {
 	deployer := new(mockDeployer)
 	deployer.result = errors.New("fail")
-	c := New(deployer)
+	c := New("/deploy", deployer, func(auth_model.AuthToken) bool {
+		return true
+	})
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "/deploy",
+		Message: "/deploy 123",
 	})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -81,19 +92,7 @@ func TestMessageWithBambooFailure(t *testing.T) {
 	if err := AssertThat(deployer.counter, Is(1)); err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestMessageWithoutBamboo(t *testing.T) {
-	deployer := new(mockDeployer)
-	c := New(deployer)
-	responses, err := c.HandleMessage(&api.Request{Message: "foo"})
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(len(responses), Is(0)); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(deployer.counter, Is(0)); err != nil {
+	if err := AssertThat(deployer.number, Is(123)); err != nil {
 		t.Fatal(err)
 	}
 }
