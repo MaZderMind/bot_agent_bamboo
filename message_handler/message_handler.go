@@ -21,11 +21,9 @@ func New(deployer bamboo.Deployer) *bambooAgent {
 
 func (h *bambooAgent) HandleMessage(request *api.Request) ([]*api.Response, error) {
 	glog.V(2).Infof("handle message for token: %v", request.Id)
-
 	if glog.V(4) {
 		glog.Infof("request %+v", request)
 	}
-
 	if request.Message != fmt.Sprintf("bamboo %s", request.Bot) {
 		glog.V(2).Infof("message contains no bamboo => skip")
 		return nil, nil
@@ -34,6 +32,10 @@ func (h *bambooAgent) HandleMessage(request *api.Request) ([]*api.Response, erro
 		glog.V(2).Infof("from is empty => skip")
 		return nil, nil
 	}
+	if err := h.deployer.Deploy(); err != nil {
+		glog.V(1).Infof("deploy failed: %v", err)
+		return response.CreateReponseMessage(fmt.Sprintf("trigger deployment failed: %v", err)), nil
+	}
 	glog.V(2).Infof("return response")
-	return response.CreateReponseMessage(fmt.Sprintf("bamboo %s", request.From.UserName)), nil
+	return response.CreateReponseMessage("deployment triggered succcesful"), nil
 }
