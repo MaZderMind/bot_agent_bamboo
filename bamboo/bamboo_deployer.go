@@ -40,7 +40,7 @@ func NewDeployer(
 }
 
 func (d *deployer) authHeader() http.Header {
-	var h http.Header
+	h := make(http.Header)
 	h.Add("Authorization", fmt.Sprintf("Basic %s", header.CreateAuthorizationToken(d.bambooUsername.String(), d.bambooPassword.String())))
 	return h
 }

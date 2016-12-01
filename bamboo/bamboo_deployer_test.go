@@ -21,3 +21,10 @@ func TestImplementsDeployer(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestCreateAuth(t *testing.T) {
+	c := NewDeployer(nil, "url", "user", "pass")
+	if err := AssertThat(c.authHeader(), NotNilValue()); err != nil {
+		t.Fatal(err)
+	}
+}
