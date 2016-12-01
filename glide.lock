@@ -1,0 +1,41 @@
+hash: 16e7d9c1e9da9bb6af3d6baa690e869e916894e2eafb14d934f2dd48b19cecac
+updated: 2016-12-01T18:19:30.223117412+01:00
+imports:
+- name: github.com/bborbe/auth
+  version: f2dc4c5dc422e4ec757d3f613045faed5d5044d4
+  subpackages:
+  - model
+- name: github.com/bborbe/bot_agent
+  version: 04999da2098d4c4cd14c0465339d3e978e5d53c0
+  subpackages:
+  - api
+  - message_handler/relay
+  - message_handler/restrict
+  - message_handler/restrict_to_tokens
+  - pong
+  - request_consumer
+  - response
+  - sender
+  - ticket
+  - topic
+- name: github.com/bborbe/flagenv
+  version: 96aab95bb1341e7a7ccf9160e49792e2ad3b0e08
+- name: github.com/bborbe/nsq_utils
+  version: 8109cabe90190cd4e36d6d556ed8bd7445b3907a
+  subpackages:
+  - consumer
+  - logger
+  - producer
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/mreiferson/go-snappystream
+  version: 028eae7ab5c4c9e2d1cb4c4ca1e53259bbe7e504
+  subpackages:
+  - snappy-go
+- name: github.com/nsqio/go-nsq
+  version: d71fb89c9e0263aaed89645b0b168e11ccf597b1
+- name: github.com/nu7hatch/gouuid
+  version: 179d4d0c4d8d407a32af483c2354df1d2c91e6c3
+testImports:
+- name: github.com/bborbe/assert
+  version: d2b3a7c4c731ac8cc63c6f5a1ea7d401e7547d42

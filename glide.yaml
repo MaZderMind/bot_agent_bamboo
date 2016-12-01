@@ -1,0 +1,19 @@
+package: github.com/bborbe/bot_agent_bamboo
+import:
+- package: github.com/bborbe/auth
+  subpackages:
+  - model
+- package: github.com/bborbe/bot_agent
+  subpackages:
+  - api
+  - message_handler/restrict_to_tokens
+  - request_consumer
+  - response
+  - sender
+- package: github.com/bborbe/flagenv
+- package: github.com/bborbe/nsq_utils
+  subpackages:
+  - producer
+- package: github.com/golang/glog
+testImport:
+- package: github.com/bborbe/assert
