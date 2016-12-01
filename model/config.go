@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/bborbe/nsq_utils"
 )
 
@@ -39,6 +40,11 @@ func (config *Config) Validate() error {
 	return nil
 }
 
+// BambooUrl is the url of bamboo
 type BambooUrl string
+
+// BambooUsername is the username of bamboo
 type BambooUsername string
+
+// BambooPassword is the password of bamboo
 type BambooPassword string

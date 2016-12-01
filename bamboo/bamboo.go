@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// Deployer can trigger a bamboo deployment
 type Deployer interface {
 	Deploy() error
 }
@@ -15,6 +16,7 @@ type deployer struct {
 	bambooPassword model.BambooPassword
 }
 
+// NewDeployer returns a new instance of Deployer
 func NewDeployer(
 	bambooUrl model.BambooUrl,
 	bambooUsername model.BambooUsername,

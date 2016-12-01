@@ -6,8 +6,8 @@ import (
 	"os"
 
 	. "github.com/bborbe/assert"
-	"github.com/golang/glog"
 	"github.com/bborbe/bot_agent_bamboo/model"
+	"github.com/golang/glog"
 )
 
 func TestMain(m *testing.M) {
