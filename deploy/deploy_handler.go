@@ -42,11 +42,10 @@ func (h *handler) Help(request *api.Request) []string {
 }
 
 func (h *handler) HandleMessage(request *api.Request) ([]*api.Response, error) {
-	if glog.V(4) {
-		glog.Infof("request %+v", request)
-	}
+	glog.V(3).Infof("handle deploy command")
 	id, err := h.command.Parameter(request, "[ID]")
 	if err != nil {
+		glog.V(3).Infof("parse command failed: %v", err)
 		return nil, err
 	}
 	if err := h.deploy(id); err != nil {
