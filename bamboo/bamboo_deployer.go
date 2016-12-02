@@ -58,6 +58,14 @@ func filterProjects(vs []project, f func(project) bool) []project {
 	return vsf
 }
 
+func extractProjectNames(projects []project) []string {
+	names := make([]string, 0)
+	for _, project := range projects {
+		names = append(names, project.Name)
+	}
+	return names
+}
+
 func (d *deployer) selectProject(projectName string) (*project, error) {
 	projects, err := d.listProjects()
 	if err != nil {
@@ -75,9 +83,9 @@ func (d *deployer) selectProject(projectName string) (*project, error) {
 	})
 
 	if len(filtered) == 0 {
-		return nil, fmt.Errorf("No Project named %s found (searched %d Projects)", projectName, len(projects))
+		return nil, fmt.Errorf("No Project starting with %s found (searched %d Projects)", projectName, len(projects))
 	} else if len(filtered) > 1 {
-		return nil, fmt.Errorf("More then 1 Project named %s found", projectName)
+		return nil, fmt.Errorf("More then 1 Project starting with %s found: %s", projectName, strings.Join(extractProjectNames(filtered), ", "))
 	}
 
 	return &filtered[0], nil
