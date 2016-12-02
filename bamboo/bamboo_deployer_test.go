@@ -1053,7 +1053,7 @@ func TestEnqueeDeploy(t *testing.T) {
 			}
 			body = environmentsJson
 			environmentsRequestCount++
-		} else if req.URL.Path == "/rest/api/latest/queue/deployment/" && req.URL.Query().Get("environmentId") == "2719745" {
+		} else if req.URL.Path == "/rest/api/latest/queue/deployment/" && req.URL.Query().Get("environmentId") == "2719745" && req.URL.Query().Get("versionId") == "4685835" {
 			body = ""
 			queueDeploymentRequestCount++
 		} else {
