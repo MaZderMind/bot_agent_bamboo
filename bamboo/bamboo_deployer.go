@@ -39,18 +39,34 @@ func NewDeployer(
 	return d
 }
 
-func (d *deployer) authHeader() http.Header {
+func (d *deployer) header() http.Header {
 	h := make(http.Header)
 	h.Add("Authorization", fmt.Sprintf("Basic %s", header.CreateAuthorizationToken(d.bambooUsername.String(), d.bambooPassword.String())))
+	h.Add("Accepts", "application/json")
 	return h
 }
 
 func (d *deployer) Deploy(number int) error {
 	glog.V(4).Infof("deploy to url: %v with user: %v and pw-length: %d", d.bambooUrl, d.bambooUsername, len(d.bambooPassword))
-	err := d.rest.Call(d.bambooUrl.String(), nil, http.MethodGet, nil, nil, d.authHeader())
+	err := d.rest.Call(d.bambooUrl.String(), nil, http.MethodGet, nil, nil, d.header())
 	if err != nil {
 		glog.V(1).Infof("call bamboo failed: %v", err)
 		return err
 	}
 	return nil
+}
+
+type project struct {
+	Id int `json:"id"`
+}
+
+func (d *deployer) listProjects() ([]project, error) {
+	var data []project
+	url := fmt.Sprintf("%s/rest/api/latest/deploy/project/all", d.bambooUrl)
+	err := d.rest.Call(url, nil, http.MethodGet, nil, &data, d.header())
+	if err != nil {
+		glog.V(1).Infof("call bamboo failed: %v", err)
+		return nil, err
+	}
+	return data, nil
 }
