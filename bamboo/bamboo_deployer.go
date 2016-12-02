@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"strings"
+
 	"github.com/bborbe/bot_agent_bamboo/model"
 	"github.com/bborbe/http/header"
 	"github.com/bborbe/http/rest"
@@ -69,7 +71,7 @@ func (d *deployer) selectProject(projectName string) (*project, error) {
 	}
 
 	filtered := filterProjects(projects, func(theProject project) bool {
-		return theProject.Name == projectName
+		return strings.HasPrefix(theProject.Name, projectName)
 	})
 
 	if len(filtered) == 0 {

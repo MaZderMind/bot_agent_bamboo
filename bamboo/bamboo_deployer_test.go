@@ -1010,6 +1010,26 @@ func TestFilterProject(t *testing.T) {
 	}
 }
 
+func TestFilterProjectPrefix(t *testing.T) {
+	d := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       createBody(listProjectsJson),
+		}, nil
+	}), "http://example.com", "user", "pass")
+
+	selected, err := d.selectProject("Depl")
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(selected, NotNilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(selected.Id, Is(2588673)); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestFilterUnknownProject(t *testing.T) {
 	d := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
 		return &http.Response{
