@@ -41,16 +41,16 @@ func (config *Config) Validate() error {
 		return fmt.Errorf("parameter BambooUsername missing")
 	}
 	if len(config.BambooPassword) == 0 {
+		return fmt.Errorf("parameter BambooPassword missing")
+	}
+	if len(config.AuthUrl) == 0 {
 		return fmt.Errorf("parameter AuthUrl missing")
 	}
-	if len(config.BambooPassword) == 0 {
+	if len(config.AuthApplicationName) == 0 {
 		return fmt.Errorf("parameter AuthApplicationName missing")
 	}
-	if len(config.BambooPassword) == 0 {
+	if len(config.AuthApplicationPassword) == 0 {
 		return fmt.Errorf("parameter AuthApplicationPassword missing")
-	}
-	if len(config.BambooPassword) == 0 {
-		return fmt.Errorf("parameter BambooPassword missing")
 	}
 	if len(config.Prefix) == 0 {
 		return fmt.Errorf("parameter Prefix missing")
