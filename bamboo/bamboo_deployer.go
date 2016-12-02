@@ -58,6 +58,7 @@ func (d *deployer) Deploy(number int) error {
 		return fmt.Errorf("project list is empty")
 	}
 	project := projects[0]
+
 	versions, err := d.listVersions(project.Id)
 	if err != nil {
 		glog.V(1).Infof("list versions failed: %v", err)
@@ -68,7 +69,19 @@ func (d *deployer) Deploy(number int) error {
 		return fmt.Errorf("version list is empty")
 	}
 	version := versions[0]
-	err = d.deploy(project.Id, version.Id)
+
+	environments, err := d.listEnvironments(project.Id)
+	if err != nil {
+		glog.V(1).Infof("list environments failed: %v", err)
+		return err
+	}
+	if len(environments) == 0 {
+		glog.V(1).Infof("environment  list is empty")
+		return fmt.Errorf("environment  list is empty")
+	}
+	environment := environments[0]
+
+	err = d.deploy(environment.Id, version.Id)
 	if err != nil {
 		glog.V(1).Infof("deploy failed: %v", err)
 		return err
@@ -119,4 +132,23 @@ func (d *deployer) deploy(projectId int, versionId int) error {
 		return err
 	}
 	return nil
+}
+
+type environments struct {
+	Environments []environment `json:"environments"`
+}
+
+type environment struct {
+	Id int `json:"id"`
+}
+
+func (d *deployer) listEnvironments(projectId int) ([]environment, error) {
+	var data environments
+	url := fmt.Sprintf("%s/rest/api/latest/deploy/project/%d", d.bambooUrl, projectId)
+	err := d.rest.Call(url, nil, http.MethodGet, nil, &data, d.header())
+	if err != nil {
+		glog.V(1).Infof("list versions failed: %v", err)
+		return nil, err
+	}
+	return data.Environments, nil
 }
