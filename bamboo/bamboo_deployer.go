@@ -81,6 +81,41 @@ func (d *deployer) selectProject(projectName string) (*project, error) {
 	return &filtered[0], nil
 }
 
+func filterEnvironments(vs []environment, f func(environment) bool) []environment {
+	vsf := make([]environment, 0)
+	for _, v := range vs {
+		if f(v) {
+			vsf = append(vsf, v)
+		}
+	}
+	return vsf
+}
+
+func (d *deployer) selectEnvironment(forProject project, environmentName string) (*environment, error) {
+	environments, err := d.listEnvironments(forProject.Id)
+	if err != nil {
+		glog.V(1).Infof("list environments failed: %v", err)
+		return nil, err
+	}
+
+	if len(environments) == 0 {
+		glog.V(1).Infof("environment list is empty")
+		return nil, fmt.Errorf("environment list is empty")
+	}
+
+	filtered := filterEnvironments(environments, func(theEnv environment) bool {
+		return theEnv.Name == environmentName
+	})
+
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("No Environment named %s found (searched %d Projects)", environmentName, len(environments))
+	} else if len(filtered) > 1 {
+		return nil, fmt.Errorf("More then 1 Environment named %s found", environmentName)
+	}
+
+	return &filtered[0], nil
+}
+
 func (d *deployer) Deploy(projectName, environmentName string) error {
 	glog.V(4).Infof("deploy to url: %v with user: %v and pw-length: %d", d.bambooUrl, d.bambooUsername, len(d.bambooPassword))
 	selectedProject, err := d.selectProject(projectName)
@@ -170,7 +205,8 @@ type environments struct {
 }
 
 type environment struct {
-	Id int `json:"id"`
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 func (d *deployer) listEnvironments(projectId int) ([]environment, error) {
