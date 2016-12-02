@@ -888,35 +888,6 @@ const versionsJson = `{
   "max-result": 15
 }`
 
-func TestListVersionsFailed(t *testing.T) {
-	deployer := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
-		return nil, fmt.Errorf("request failed")
-	}), "http://example.com", "user", "pass")
-	list, err := deployer.listVersions(2588673)
-	if err := AssertThat(err, NotNilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(len(list), Is(0)); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestListVersionsSuccess(t *testing.T) {
-	deployer := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
-		return &http.Response{
-			StatusCode: 200,
-			Body:       createBody(versionsJson),
-		}, nil
-	}), "http://example.com", "user", "pass")
-	list, err := deployer.listVersions(2588673)
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(len(list), Is(15)); err != nil {
-		t.Fatal(err)
-	}
-}
-
 const environmentsJson = `{
   "id": 2588673,
   "oid": 1154328879490400300,
@@ -960,6 +931,35 @@ const environmentsJson = `{
     "allowedToSetVersionStatus": false
   }
 }`
+
+func TestListVersionsFailed(t *testing.T) {
+	deployer := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
+		return nil, fmt.Errorf("request failed")
+	}), "http://example.com", "user", "pass")
+	list, err := deployer.listVersions(2588673)
+	if err := AssertThat(err, NotNilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(len(list), Is(0)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestListVersionsSuccess(t *testing.T) {
+	deployer := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       createBody(versionsJson),
+		}, nil
+	}), "http://example.com", "user", "pass")
+	list, err := deployer.listVersions(2588673)
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(len(list), Is(15)); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestListEnvironmentsFailed(t *testing.T) {
 	deployer := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
