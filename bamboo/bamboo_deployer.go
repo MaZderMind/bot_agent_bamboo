@@ -101,7 +101,7 @@ func filterEnvironments(vs []environment, f func(environment) bool) []environmen
 	return vsf
 }
 
-func (d *deployer) selectEnvironment(forProject project, environmentName string) (*environment, error) {
+func (d *deployer) selectEnvironment(forProject *project, environmentName string) (*environment, error) {
 	environments, err := d.listEnvironments(forProject.Id)
 	if err != nil {
 		glog.V(1).Infof("list environments failed: %v", err)
@@ -145,16 +145,11 @@ func (d *deployer) Deploy(projectName, environmentName string) error {
 	}
 	version := versions[0]
 
-	environments, err := d.listEnvironments(selectedProject.Id)
+	environment, err := d.selectEnvironment(selectedProject, environmentName)
 	if err != nil {
-		glog.V(1).Infof("list environments failed: %v", err)
+		glog.V(1).Infof("environment selection failed: %v", err)
 		return err
 	}
-	if len(environments) == 0 {
-		glog.V(1).Infof("environment  list is empty")
-		return fmt.Errorf("environment  list is empty")
-	}
-	environment := environments[0]
 
 	err = d.deploy(environment.Id, version.Id)
 	if err != nil {
