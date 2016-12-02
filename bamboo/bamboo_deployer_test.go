@@ -43,6 +43,49 @@ func TestCreateAuth(t *testing.T) {
 
 const listProjectsJson = `[
   {
+    "id": 42,
+    "oid": 1154328879490400300,
+    "key": {
+      "key": "42"
+    },
+    "name": "Foo",
+    "planKey": {
+      "key": "TELU-TELUB"
+    },
+    "description": "",
+    "environments": [
+      {
+        "id": 2719745,
+        "key": {
+          "key": "2588673-2719745"
+        },
+        "name": "Staging",
+        "description": "",
+        "deploymentProjectId": 2588673,
+        "operations": {
+          "canView": true,
+          "canEdit": false,
+          "canDelete": false,
+          "allowedToExecute": false,
+          "canExecute": false,
+          "allowedToCreateVersion": false,
+          "allowedToSetVersionStatus": false
+        },
+        "position": 0,
+        "configurationState": "TASKED"
+      }
+    ],
+    "operations": {
+      "canView": true,
+      "canEdit": false,
+      "canDelete": false,
+      "allowedToExecute": false,
+      "canExecute": false,
+      "allowedToCreateVersion": false,
+      "allowedToSetVersionStatus": false
+    }
+  },
+  {
     "id": 2588673,
     "oid": 1154328879490400300,
     "key": {
@@ -963,6 +1006,23 @@ func TestFilterProject(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := AssertThat(selected.Id, Is(2588673)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestFilterUnknwonProject(t *testing.T) {
+	d := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       createBody(listProjectsJson),
+		}, nil
+	}), "http://example.com", "user", "pass")
+
+	selected, err := d.selectProject("NotExistingProject")
+	if err := AssertThat(err, NotNilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(selected, NilValue()); err != nil {
 		t.Fatal(err)
 	}
 }

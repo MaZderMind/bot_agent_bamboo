@@ -68,8 +68,8 @@ func (d *deployer) selectProject(projectName string) (*project, error) {
 		return nil, fmt.Errorf("project list is empty")
 	}
 
-	filtered := filterProjects(projects, func(project) bool {
-		return true
+	filtered := filterProjects(projects, func(theProject project) bool {
+		return theProject.Name == projectName
 	})
 
 	if len(filtered) == 0 {
@@ -78,7 +78,7 @@ func (d *deployer) selectProject(projectName string) (*project, error) {
 		return nil, fmt.Errorf("More then 1 Project named %s found", projectName)
 	}
 
-	return &projects[0], nil
+	return &filtered[0], nil
 }
 
 func (d *deployer) Deploy(projectName, environmentName string) error {
