@@ -2,16 +2,18 @@ package bamboo
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"bytes"
 	"fmt"
-	. "github.com/bborbe/assert"
-	"github.com/bborbe/http/rest"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	. "github.com/bborbe/assert"
+	"github.com/bborbe/http/rest"
+	"github.com/golang/glog"
 )
 
 func createBody(body string) io.ReadCloser {
@@ -941,6 +943,63 @@ func TestListEnvironmentsSuccess(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := AssertThat(len(list), Is(1)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEnqueeDeplos(t *testing.T) {
+	listProjectsRequestCount := 0
+	versionsRequestCount := 0
+	environmentsRequestCount := 0
+	queueDeploymentRequestCount := 0
+
+	deployer := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
+		glog.Infof("!!!!! mock request for %s", req.URL.Path)
+
+		body := ""
+
+		if req.URL.Path == "/rest/api/latest/deploy/project/all" {
+			body = listProjectsJson
+			listProjectsRequestCount++
+		} else if match, err := regexp.MatchString("^/rest/api/latest/deploy/project/[0-9]+/versions$", req.URL.Path); match {
+			if err != nil {
+				t.Fatal(err)
+			}
+			body = versionsJson
+			versionsRequestCount++
+		} else if match, err := regexp.MatchString("^/rest/api/latest/deploy/project/[0-9]+$", req.URL.Path); match {
+			if err != nil {
+				t.Fatal(err)
+			}
+			body = environmentsJson
+			environmentsRequestCount++
+		} else if req.URL.Path == "/rest/api/latest/queue/deployment/" {
+			body = ""
+			queueDeploymentRequestCount++
+		} else {
+			t.Fatal(fmt.Errorf("Unexpected Request-URL %s", req.URL))
+		}
+
+		return &http.Response{
+			StatusCode: 200,
+			Body:       createBody(body),
+		}, nil
+	}), "http://example.com", "user", "pass")
+
+	err := deployer.Deploy("Deploy Develop", "Staging")
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(listProjectsRequestCount, Is(1)); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(versionsRequestCount, Is(1)); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(environmentsRequestCount, Is(1)); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(queueDeploymentRequestCount, Is(1)); err != nil {
 		t.Fatal(err)
 	}
 }
