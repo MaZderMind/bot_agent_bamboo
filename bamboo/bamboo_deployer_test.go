@@ -947,7 +947,27 @@ func TestListEnvironmentsSuccess(t *testing.T) {
 	}
 }
 
-func TestEnqueeDeplos(t *testing.T) {
+func TestFilterProject(t *testing.T) {
+	d := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       createBody(listProjectsJson),
+		}, nil
+	}), "http://example.com", "user", "pass")
+
+	selected, err := d.selectProject("Deploy Develop")
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(selected, NotNilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(selected.Id, Is(2588673)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEnqueeDeploy(t *testing.T) {
 	listProjectsRequestCount := 0
 	versionsRequestCount := 0
 	environmentsRequestCount := 0

@@ -46,20 +46,50 @@ func (d *deployer) header() http.Header {
 	return h
 }
 
-func (d *deployer) Deploy(projectName, environmentName string) error {
-	glog.V(4).Infof("deploy to url: %v with user: %v and pw-length: %d", d.bambooUrl, d.bambooUsername, len(d.bambooPassword))
+func filterProjects(vs []project, f func(project) bool) []project {
+	vsf := make([]project, 0)
+	for _, v := range vs {
+		if f(v) {
+			vsf = append(vsf, v)
+		}
+	}
+	return vsf
+}
+
+func (d *deployer) selectProject(projectName string) (*project, error) {
 	projects, err := d.listProjects()
 	if err != nil {
 		glog.V(1).Infof("list projects failed: %v", err)
-		return err
+		return nil, err
 	}
+
 	if len(projects) == 0 {
 		glog.V(1).Infof("project list is empty")
-		return fmt.Errorf("project list is empty")
+		return nil, fmt.Errorf("project list is empty")
 	}
-	project := projects[0]
 
-	versions, err := d.listVersions(project.Id)
+	filtered := filterProjects(projects, func(project) bool {
+		return true
+	})
+
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("No Project named %s found (searched %d Projects)", projectName, len(projects))
+	} else if len(filtered) > 1 {
+		return nil, fmt.Errorf("More then 1 Project named %s found", projectName)
+	}
+
+	return &projects[0], nil
+}
+
+func (d *deployer) Deploy(projectName, environmentName string) error {
+	glog.V(4).Infof("deploy to url: %v with user: %v and pw-length: %d", d.bambooUrl, d.bambooUsername, len(d.bambooPassword))
+	selectedProject, err := d.selectProject(projectName)
+	if err != nil {
+		glog.V(1).Infof("project selection failed: %v", err)
+		return err
+	}
+
+	versions, err := d.listVersions(selectedProject.Id)
 	if err != nil {
 		glog.V(1).Infof("list versions failed: %v", err)
 		return err
@@ -70,7 +100,7 @@ func (d *deployer) Deploy(projectName, environmentName string) error {
 	}
 	version := versions[0]
 
-	environments, err := d.listEnvironments(project.Id)
+	environments, err := d.listEnvironments(selectedProject.Id)
 	if err != nil {
 		glog.V(1).Infof("list environments failed: %v", err)
 		return err
@@ -91,7 +121,8 @@ func (d *deployer) Deploy(projectName, environmentName string) error {
 }
 
 type project struct {
-	Id int `json:"id"`
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 func (d *deployer) listProjects() ([]project, error) {
