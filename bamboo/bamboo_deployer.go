@@ -48,11 +48,32 @@ func (d *deployer) header() http.Header {
 
 func (d *deployer) Deploy(number int) error {
 	glog.V(4).Infof("deploy to url: %v with user: %v and pw-length: %d", d.bambooUrl, d.bambooUsername, len(d.bambooPassword))
-	err := d.rest.Call(d.bambooUrl.String(), nil, http.MethodGet, nil, nil, d.header())
+	projects, err := d.listProjects()
 	if err != nil {
-		glog.V(1).Infof("call bamboo failed: %v", err)
+		glog.V(1).Infof("list projects failed: %v", err)
 		return err
 	}
+	if len(projects) == 0 {
+		glog.V(1).Infof("project list is empty")
+		return fmt.Errorf("project list is empty")
+	}
+	project := projects[0]
+	versions, err := d.listVersions(project.Id)
+	if err != nil {
+		glog.V(1).Infof("list versions failed: %v", err)
+		return err
+	}
+	if len(versions) == 0 {
+		glog.V(1).Infof("version list is empty")
+		return fmt.Errorf("version list is empty")
+	}
+	version := versions[0]
+	err = d.deploy(project.Id, version.Id)
+	if err != nil {
+		glog.V(1).Infof("deploy failed: %v", err)
+		return err
+	}
+	glog.V(2).Infof("deploy completed")
 	return nil
 }
 
@@ -65,8 +86,37 @@ func (d *deployer) listProjects() ([]project, error) {
 	url := fmt.Sprintf("%s/rest/api/latest/deploy/project/all", d.bambooUrl)
 	err := d.rest.Call(url, nil, http.MethodGet, nil, &data, d.header())
 	if err != nil {
-		glog.V(1).Infof("call bamboo failed: %v", err)
+		glog.V(1).Infof("list projects failed: %v", err)
 		return nil, err
 	}
 	return data, nil
+}
+
+type versions struct {
+	Versions []version `json:"versions"`
+}
+
+type version struct {
+	Id int `json:"id"`
+}
+
+func (d *deployer) listVersions(projectId int) ([]version, error) {
+	var data versions
+	url := fmt.Sprintf("%s/rest/api/latest/deploy/project/%d/versions", d.bambooUrl, projectId)
+	err := d.rest.Call(url, nil, http.MethodGet, nil, &data, d.header())
+	if err != nil {
+		glog.V(1).Infof("list versions failed: %v", err)
+		return nil, err
+	}
+	return data.Versions, nil
+}
+
+func (d *deployer) deploy(projectId int, versionId int) error {
+	url := fmt.Sprintf("%s/rest/api/latest/queue/deployment/?environmentId=%d&versionId=%d", d.bambooUrl, projectId, versionId)
+	err := d.rest.Call(url, nil, http.MethodPost, nil, nil, d.header())
+	if err != nil {
+		glog.V(1).Infof("deploy failed: %v", err)
+		return err
+	}
+	return nil
 }
