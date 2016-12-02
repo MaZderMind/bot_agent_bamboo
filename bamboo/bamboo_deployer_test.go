@@ -1010,7 +1010,7 @@ func TestFilterProject(t *testing.T) {
 	}
 }
 
-func TestFilterUnknwonProject(t *testing.T) {
+func TestFilterUnknownProject(t *testing.T) {
 	d := NewDeployer(rest.New(func(req *http.Request) (resp *http.Response, err error) {
 		return &http.Response{
 			StatusCode: 200,
