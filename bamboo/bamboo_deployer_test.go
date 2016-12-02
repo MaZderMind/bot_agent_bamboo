@@ -55,13 +55,13 @@ const listProjectsJson = `[
     "description": "",
     "environments": [
       {
-        "id": 2719745,
+        "id": 23,
         "key": {
-          "key": "2588673-2719745"
+          "key": "42-23"
         },
-        "name": "Staging",
+        "name": "Prod",
         "description": "",
-        "deploymentProjectId": 2588673,
+        "deploymentProjectId": 42,
         "operations": {
           "canView": true,
           "canEdit": false,
@@ -1041,19 +1041,19 @@ func TestEnqueeDeploy(t *testing.T) {
 		if req.URL.Path == "/rest/api/latest/deploy/project/all" {
 			body = listProjectsJson
 			listProjectsRequestCount++
-		} else if match, err := regexp.MatchString("^/rest/api/latest/deploy/project/[0-9]+/versions$", req.URL.Path); match {
+		} else if match, err := regexp.MatchString("^/rest/api/latest/deploy/project/2588673/versions$", req.URL.Path); match {
 			if err != nil {
 				t.Fatal(err)
 			}
 			body = versionsJson
 			versionsRequestCount++
-		} else if match, err := regexp.MatchString("^/rest/api/latest/deploy/project/[0-9]+$", req.URL.Path); match {
+		} else if match, err := regexp.MatchString("^/rest/api/latest/deploy/project/2588673$", req.URL.Path); match {
 			if err != nil {
 				t.Fatal(err)
 			}
 			body = environmentsJson
 			environmentsRequestCount++
-		} else if req.URL.Path == "/rest/api/latest/queue/deployment/" {
+		} else if req.URL.Path == "/rest/api/latest/queue/deployment/" && req.URL.Query().Get("environmentId") == "2719745" {
 			body = ""
 			queueDeploymentRequestCount++
 		} else {
