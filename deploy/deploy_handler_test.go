@@ -18,13 +18,15 @@ func TestMain(m *testing.M) {
 }
 
 type mockDeployer struct {
-	counter int
-	number  int
-	result  error
+	counter     int
+	project     string
+	environment string
+	result      error
 }
 
-func (m *mockDeployer) Deploy(number int) error {
-	m.number = number
+func (m *mockDeployer) Deploy(project, environment string) error {
+	m.project = project
+	m.environment = environment
 	m.counter++
 	return m.result
 }
@@ -46,7 +48,7 @@ func TestMessageWithBamboo(t *testing.T) {
 		return true
 	})
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "/deploy 123",
+		Message: "/deploy NiftyProject to Prod",
 	})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -63,7 +65,10 @@ func TestMessageWithBamboo(t *testing.T) {
 	if err := AssertThat(deployer.counter, Is(1)); err != nil {
 		t.Fatal(err)
 	}
-	if err := AssertThat(deployer.number, Is(123)); err != nil {
+	if err := AssertThat(deployer.project, Is("NiftyProject")); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(deployer.environment, Is("Prod")); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -75,7 +80,7 @@ func TestMessageWithBambooFailure(t *testing.T) {
 		return true
 	})
 	responses, err := c.HandleMessage(&api.Request{
-		Message: "/deploy 123",
+		Message: "/deploy NiftyProject to Prod",
 	})
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -92,7 +97,10 @@ func TestMessageWithBambooFailure(t *testing.T) {
 	if err := AssertThat(deployer.counter, Is(1)); err != nil {
 		t.Fatal(err)
 	}
-	if err := AssertThat(deployer.number, Is(123)); err != nil {
+	if err := AssertThat(deployer.project, Is("NiftyProject")); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(deployer.environment, Is("Prod")); err != nil {
 		t.Fatal(err)
 	}
 }

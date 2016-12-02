@@ -14,7 +14,7 @@ type executeRequest func(req *http.Request) (resp *http.Response, err error)
 
 // Deployer can trigger a bamboo deployment
 type Deployer interface {
-	Deploy(number int) error
+	Deploy(project, environment string) error
 }
 
 type deployer struct {
@@ -46,7 +46,7 @@ func (d *deployer) header() http.Header {
 	return h
 }
 
-func (d *deployer) Deploy(number int) error {
+func (d *deployer) Deploy(projectName, environmentName string) error {
 	glog.V(4).Infof("deploy to url: %v with user: %v and pw-length: %d", d.bambooUrl, d.bambooUsername, len(d.bambooPassword))
 	projects, err := d.listProjects()
 	if err != nil {

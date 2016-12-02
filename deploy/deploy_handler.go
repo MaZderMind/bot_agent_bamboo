@@ -2,7 +2,6 @@ package message_handler
 
 import (
 	"fmt"
-	"strconv"
 
 	auth_model "github.com/bborbe/auth/model"
 	"github.com/bborbe/bot_agent/api"
@@ -29,7 +28,7 @@ func New(
 	d := new(handler)
 	d.deployer = deployer
 	d.hasRequiredGroups = hasRequiredGroups
-	d.command = command.New(prefix.String(), "[ID]")
+	d.command = command.New(prefix.String(), "[PROJECT]", "to", "[ENVIRONMENT]")
 	return d
 }
 
@@ -43,25 +42,21 @@ func (h *handler) Help(request *api.Request) []string {
 
 func (h *handler) HandleMessage(request *api.Request) ([]*api.Response, error) {
 	glog.V(3).Infof("handle deploy command")
-	id, err := h.command.Parameter(request, "[ID]")
+	projectName, err := h.command.Parameter(request, "[PROJECT]")
+	environmentName, err := h.command.Parameter(request, "[ENVIRONMENT]")
 	if err != nil {
 		glog.V(3).Infof("parse command failed: %v", err)
 		return nil, err
 	}
-	if err := h.deploy(id); err != nil {
+	if err := h.deploy(projectName, environmentName); err != nil {
 		return response.CreateReponseMessage(fmt.Sprintf("trigger deployment failed: %v", err)), nil
 	}
 	glog.V(2).Infof("return response")
 	return response.CreateReponseMessage("deployment triggered succcesful"), nil
 }
 
-func (h *handler) deploy(idString string) error {
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		glog.V(1).Infof("parse deployment id failed: %v", err)
-		return err
-	}
-	if err = h.deployer.Deploy(id); err != nil {
+func (h *handler) deploy(projectName, environmentName string) error {
+	if err := h.deployer.Deploy(projectName, environmentName); err != nil {
 		glog.V(1).Infof("deploy failed: %v", err)
 		return err
 	}
